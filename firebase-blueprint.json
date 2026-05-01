@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile with role-based access",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin", "parent"] },
+        "profilePic": { "type": "string" },
+        "bio": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "E-commerce Product",
+      "description": "Product for sale (Finished, DIY kit, or Raw material)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string", "enum": ["Finished products", "DIY kits", "Raw materials", "Memberships"] },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "inventory": { "type": "number" },
+        "variations": { "type": "object" },
+        "gstRate": { "type": "number" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "Course": {
+      "title": "LMS Course",
+      "description": "Educational course for artisans",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["Home Decor", "Jewelry Making", "Beginner", "Intermediate", "Advanced"] },
+        "instructorId": { "type": "string" },
+        "price": { "type": "number" },
+        "thumbnail": { "type": "string" },
+        "lessonCount": { "type": "number" }
+      },
+      "required": ["title", "instructorId", "price"]
+    },
+    "Lesson": {
+      "title": "Course Lesson",
+      "description": "Single lesson within a course",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "pdf", "quiz", "assignment"] },
+        "contentUrl": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["courseId", "title", "type"]
+    },
+    "Order": {
+      "title": "Customer Order",
+      "description": "Purchase record for products",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "gstAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid", "shipped", "delivered"] },
+        "paymentId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Subscription": {
+      "title": "Membership Subscription",
+      "description": "Recurring subscription record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["membership", "diy-kit"] },
+        "status": { "type": "string", "enum": ["active", "cancelled", "expired"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global configuration like logo and favicon",
+      "type": "object",
+      "properties": {
+        "logoBase64": { "type": "string" },
+        "faviconBase64": { "type": "string" },
+        "siteName": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profile data" },
+    "/products/{productId}": { "schema": "Product", "description": "Shop products" },
+    "/courses/{courseId}": { "schema": "Course", "description": "LMS courses" },
+    "/courses/{courseId}/lessons/{lessonId}": { "schema": "Lesson", "description": "Individual lessons" },
+    "/orders/{orderId}": { "schema": "Order", "description": "Customer orders" },
+    "/subscriptions/{subId}": { "schema": "Subscription", "description": "User subscriptions" },
+    "/settings/general": { "schema": "SiteSettings", "description": "Global site settings" }
+  }
+}

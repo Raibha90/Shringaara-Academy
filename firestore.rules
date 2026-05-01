@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Users ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && 
+        request.resource.data.role == 'student' && 
+        isValidId(userId); 
+      allow update: if isOwner(userId) && 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'email'])) &&
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'bio', 'profilePic']));
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Products ---
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Courses ---
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      
+      match /lessons/{lessonId} {
+        allow read: if isSignedIn(); // In a real app, check if user has purchased the course
+        allow write: if isAdmin();
+      }
+    }
+
+    // --- Orders ---
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+    }
+
+    // --- Subscriptions ---
+    match /subscriptions/{subId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // --- Mentors ---
+    match /mentors/{mentorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Settings ---
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
