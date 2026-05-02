@@ -408,111 +408,103 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 backdrop-blur-md bg-black/40"
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4 bg-black/20"
             onClick={(e: any) => e.target === e.currentTarget && setShowSearch(false)}
           >
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: -20 }}
+              initial={{ scale: 0.98, opacity: 0, y: -10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: -10 }}
-              className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-white/20"
+              exit={{ scale: 0.98, opacity: 0, y: -10 }}
+              className="bg-white/90 backdrop-blur-2xl w-full max-w-3xl rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.15)] overflow-hidden border border-black/5"
             >
-              <div className="p-5 flex items-center gap-4 border-b">
-                <Search className="text-gray-400" size={24} />
+              <div className="flex items-center px-6 py-5">
+                <Search className="text-gray-500 mr-4 shrink-0" size={28} />
                 <input 
                   ref={searchInputRef}
                   type="text" 
-                  placeholder="Search for products, courses, or techniques..."
-                  className="w-full text-xl md:text-2xl font-serif bg-transparent focus:outline-none placeholder-gray-300"
+                  placeholder="Spotlight Search"
+                  className="w-full text-3xl font-light bg-transparent focus:outline-none placeholder-gray-400 text-gray-800"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button 
-                  onClick={() => setShowSearch(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                {searchQuery && (
+                   <button 
+                     onClick={() => setSearchQuery('')}
+                     className="p-1 rounded-full text-gray-400 hover:text-gray-600 transition-colors bg-black/5 hover:bg-black/10 ml-4"
+                   >
+                     <X size={16} />
+                   </button>
+                )}
               </div>
 
-              <div className="max-h-[60vh] overflow-y-auto p-4 custom-scrollbar">
+              {/* Divider */}
+              {(isSearching || searchResults.length > 0 || searchQuery.length > 1) && (
+                <div className="h-px bg-black/5 mx-4" />
+              )}
+
+              <div className="max-h-[50vh] overflow-y-auto px-4 py-2 custom-scrollbar">
                 {isSearching ? (
-                  <div className="py-20 text-center">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#5A5A40]"></div>
-                    <p className="mt-4 text-gray-400 font-serif italic">Searching Shringaara Archives...</p>
+                  <div className="py-12 text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-400"></div>
                   </div>
                 ) : searchResults.length > 0 ? (
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 px-2">Top Results</h4>
-                      <div className="space-y-1">
-                        {searchResults.map((result: any) => (
+                  <div className="space-y-1 pb-4">
+                    {searchResults.map((result: any, i: number) => (
+                      <button 
+                        key={result.id}
+                        onClick={() => {
+                          handleNavClick(result.type === 'product' ? 'Shop' : 'Courses');
+                          setShowSearch(false);
+                        }}
+                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all group text-left ${i === 0 ? 'bg-blue-500/10' : 'hover:bg-black/5'}`}
+                      >
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
+                          {result.img || result.thumbnail ? (
+                            <img src={result.img || result.thumbnail} alt={result.name || result.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <Search size={16} className="text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h5 className="text-base text-gray-900 font-medium line-clamp-1">{result.name || result.title}</h5>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-gray-500 capitalize">{result.type}</span>
+                            {result.category && (
+                              <>
+                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                <span className="text-xs text-gray-500">{result.category}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right text-gray-500 flex items-center gap-2">
+                           <span className="text-sm font-medium">${result.price}</span>
+                           <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : searchQuery.length > 1 ? (
+                  <div className="py-12 text-center flex flex-col items-center">
+                    <span className="text-sm text-gray-500 mb-2">No Results</span>
+                    <span className="text-2xl font-light text-gray-900">"{searchQuery}"</span>
+                  </div>
+                ) : (
+                   <div className="pb-4 pt-2">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 px-4">Suggested</h4>
+                      <div className="flex justify-start gap-2 px-4 flex-wrap">
+                        {['Ceramics', 'Vase', 'DIY', 'Bamboo'].map(tag => (
                           <button 
-                            key={result.id}
-                            onClick={() => {
-                              handleNavClick(result.type === 'product' ? 'Shop' : 'Courses');
-                              setShowSearch(false);
-                            }}
-                            className="w-full flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all group text-left"
+                            key={tag}
+                            onClick={() => setSearchQuery(tag)}
+                            className="px-4 py-1.5 bg-black/5 rounded-full text-sm text-gray-600 hover:bg-black/10 transition-colors"
                           >
-                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                              <img src={result.img || result.thumbnail} alt={result.name || result.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                  result.type === 'product' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
-                                }`}>
-                                  {result.type}
-                                </span>
-                                {result.category && <span className="text-xs text-gray-400">{result.category}</span>}
-                              </div>
-                              <h5 className="font-serif text-lg text-[#333] group-hover:text-[#306C69] transition-colors">{result.name || result.title}</h5>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-medium text-[#5A5A40]">${result.price}</p>
-                              <ChevronRight size={16} className="text-gray-300 group-hover:text-[#5A5A40] ml-auto mt-1" />
-                            </div>
+                            {tag}
                           </button>
                         ))}
                       </div>
-                    </div>
-                  </div>
-                ) : searchQuery.length > 1 ? (
-                  <div className="py-20 text-center">
-                    <Command className="mx-auto text-gray-200 mb-4" size={48} />
-                    <p className="text-gray-400">No treasures found for "<span className="text-[#333] italic">{searchQuery}</span>"</p>
-                    <p className="text-xs text-gray-400 mt-2">Try different keywords or browse categories.</p>
-                  </div>
-                ) : (
-                  <div className="py-20 text-center">
-                    <Search className="mx-auto text-gray-100 mb-4" size={48} />
-                    <p className="text-gray-400">Start typing to explore the academy...</p>
-                    <div className="flex justify-center gap-2 mt-6">
-                      {['Ceramics', 'Vase', 'DIY', 'Bamboo'].map(tag => (
-                        <button 
-                          key={tag}
-                          onClick={() => setSearchQuery(tag)}
-                          className="px-3 py-1 bg-gray-50 border rounded-full text-xs text-gray-500 hover:bg-gray-100 transition-colors"
-                        >
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                   </div>
                 )}
-              </div>
-              
-              <div className="bg-gray-50 p-3 flex justify-between items-center px-6 border-t">
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold tracking-widest">
-                    <span className="px-1.5 py-0.5 bg-white border rounded shadow-sm text-gray-600">ESC</span> Close
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold tracking-widest">
-                    <span className="px-1.5 py-0.5 bg-white border rounded shadow-sm text-gray-600">↵</span> Select
-                  </div>
-                </div>
-                <div className="text-[10px] text-gray-400 italic">Shringaara Intelligent Search</div>
               </div>
             </motion.div>
           </motion.div>
