@@ -15,7 +15,9 @@ import Contact from './pages/Contact';
 import Categories from './pages/Categories';
 import Dashboard from './pages/Dashboard';
 
-function AuthOption({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) {
+import { handleFirestoreError, OperationType } from './lib/errorHandler';
+
+export function AuthOption({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
@@ -115,6 +117,8 @@ export default function App() {
           document.title = data.siteName;
         }
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'settings/general', auth);
     });
 
     return () => {
@@ -164,7 +168,7 @@ export default function App() {
 
       setSearchResults([...products, ...courses]);
     } catch (error) {
-      console.error("Search failed:", error);
+      handleFirestoreError(error, OperationType.LIST, 'products/courses', auth);
     } finally {
       setIsSearching(false);
     }
